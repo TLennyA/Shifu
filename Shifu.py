@@ -11,9 +11,9 @@ import subprocess
 import webbrowser
 
 
-# ==============================
+# ============================================================
 # CONFIGURAZIONE SHIFU
-# ==============================
+# ============================================================
 
 VERSIONE = "0.9"
 
@@ -28,9 +28,9 @@ OLLAMA_URL = "http://localhost:11434/api/chat"
 recognizer = sr.Recognizer()
 
 
-# ==============================
+# ============================================================
 # MEMORIA
-# ==============================
+# ============================================================
 
 def carica_memoria():
 
@@ -50,7 +50,6 @@ def carica_memoria():
     except Exception as errore:
 
         print("ERRORE MEMORIA:", errore)
-
         return []
 
 
@@ -79,9 +78,9 @@ def salva_memoria(memoria):
 memoria = carica_memoria()
 
 
-# ==============================
+# ============================================================
 # OLLAMA
-# ==============================
+# ============================================================
 
 def parla_con_ollama(prompt):
 
@@ -89,6 +88,7 @@ def parla_con_ollama(prompt):
 
         risposta = requests.post(
             OLLAMA_URL,
+
             json={
                 "model": MODELLO,
 
@@ -106,6 +106,7 @@ def parla_con_ollama(prompt):
                             "quindi devono essere naturali e abbastanza brevi."
                         )
                     },
+
                     {
                         "role": "user",
                         "content": prompt
@@ -128,24 +129,18 @@ def parla_con_ollama(prompt):
 
         print("ERRORE: Ollama non è raggiungibile.")
 
-        return (
-            "Non riesco a collegarmi "
-            "al mio cervello."
-        )
+        return "Non riesco a collegarmi al mio cervello."
 
     except Exception as errore:
 
         print("ERRORE OLLAMA:", errore)
 
-        return (
-            "Ho avuto un problema "
-            "mentre elaboravo la richiesta."
-        )
+        return "Ho avuto un problema mentre elaboravo la richiesta."
 
 
-# ==============================
+# ============================================================
 # RICERCA WEB
-# ==============================
+# ============================================================
 
 def cerca_web(query):
 
@@ -188,36 +183,24 @@ def cerca_web(query):
 
         if not risultati:
 
-            return (
-                "Non ho trovato "
-                "risultati sul Web."
-            )
+            return "Non ho trovato risultati sul Web."
 
-        return "\n\n".join(
-            risultati
-        )
+        return "\n\n".join(risultati)
 
     except Exception as errore:
 
-        print(
-            "ERRORE RICERCA WEB:",
-            errore
-        )
+        print("ERRORE RICERCA WEB:", errore)
 
-        return (
-            "La ricerca Web "
-            "non è disponibile."
-        )
+        return "La ricerca Web non è disponibile."
 
 
-# ==============================
-# DECISIONE RICERCA
-# ==============================
+# ============================================================
+# DECISIONE RICERCA WEB
+# ============================================================
 
 def serve_ricerca(testo):
 
     parole = [
-
         "meteo",
         "tempo",
         "gradi",
@@ -238,7 +221,6 @@ def serve_ricerca(testo):
         "chi è",
         "cosa è",
         "quando"
-
     ]
 
     testo = testo.lower()
@@ -249,17 +231,17 @@ def serve_ricerca(testo):
     )
 
 
-# ==============================
-# COMANDI PC
-# ==============================
+# ============================================================
+# CONTROLLO COMPUTER
+# ============================================================
 
 def esegui_comando_pc(testo):
 
     comando = testo.lower().strip()
 
-    # --------------------------
-    # GOOGLE CHROME
-    # --------------------------
+    # --------------------------------------------------------
+    # CHROME
+    # --------------------------------------------------------
 
     if (
         "apri chrome" in comando
@@ -277,16 +259,12 @@ def esegui_comando_pc(testo):
 
         except Exception as errore:
 
-            print(
-                "ERRORE CHROME:",
-                errore
-            )
-
+            print("ERRORE CHROME:", errore)
             return "Non riesco ad aprire Chrome."
 
-    # --------------------------
+    # --------------------------------------------------------
     # BLOCCO NOTE
-    # --------------------------
+    # --------------------------------------------------------
 
     if (
         "apri blocco note" in comando
@@ -304,16 +282,12 @@ def esegui_comando_pc(testo):
 
         except Exception as errore:
 
-            print(
-                "ERRORE BLOCCO NOTE:",
-                errore
-            )
-
+            print("ERRORE BLOCCO NOTE:", errore)
             return "Non riesco ad aprire il blocco note."
 
-    # --------------------------
+    # --------------------------------------------------------
     # CALCOLATRICE
-    # --------------------------
+    # --------------------------------------------------------
 
     if (
         "apri calcolatrice" in comando
@@ -330,16 +304,12 @@ def esegui_comando_pc(testo):
 
         except Exception as errore:
 
-            print(
-                "ERRORE CALCOLATRICE:",
-                errore
-            )
-
+            print("ERRORE CALCOLATRICE:", errore)
             return "Non riesco ad aprire la calcolatrice."
 
-    # --------------------------
+    # --------------------------------------------------------
     # DISCORD
-    # --------------------------
+    # --------------------------------------------------------
 
     if "apri discord" in comando:
 
@@ -354,16 +324,12 @@ def esegui_comando_pc(testo):
 
         except Exception as errore:
 
-            print(
-                "ERRORE DISCORD:",
-                errore
-            )
-
+            print("ERRORE DISCORD:", errore)
             return "Non riesco ad aprire Discord."
 
-    # --------------------------
+    # --------------------------------------------------------
     # ESPLORA FILE
-    # --------------------------
+    # --------------------------------------------------------
 
     if (
         "apri esplora file" in comando
@@ -381,16 +347,12 @@ def esegui_comando_pc(testo):
 
         except Exception as errore:
 
-            print(
-                "ERRORE ESPLORA FILE:",
-                errore
-            )
-
+            print("ERRORE ESPLORA FILE:", errore)
             return "Non riesco ad aprire Esplora File."
 
-    # --------------------------
+    # --------------------------------------------------------
     # IMPOSTAZIONI WINDOWS
-    # --------------------------
+    # --------------------------------------------------------
 
     if (
         "apri impostazioni" in comando
@@ -408,16 +370,12 @@ def esegui_comando_pc(testo):
 
         except Exception as errore:
 
-            print(
-                "ERRORE IMPOSTAZIONI:",
-                errore
-            )
-
+            print("ERRORE IMPOSTAZIONI:", errore)
             return "Non riesco ad aprire le impostazioni."
 
-    # --------------------------
+    # --------------------------------------------------------
     # YOUTUBE
-    # --------------------------
+    # --------------------------------------------------------
 
     if "apri youtube" in comando:
 
@@ -431,16 +389,12 @@ def esegui_comando_pc(testo):
 
         except Exception as errore:
 
-            print(
-                "ERRORE YOUTUBE:",
-                errore
-            )
-
+            print("ERRORE YOUTUBE:", errore)
             return "Non riesco ad aprire YouTube."
 
-    # --------------------------
+    # --------------------------------------------------------
     # GOOGLE
-    # --------------------------
+    # --------------------------------------------------------
 
     if (
         "apri google" in comando
@@ -457,23 +411,19 @@ def esegui_comando_pc(testo):
 
         except Exception as errore:
 
-            print(
-                "ERRORE GOOGLE:",
-                errore
-            )
-
+            print("ERRORE GOOGLE:", errore)
             return "Non riesco ad aprire Google."
 
-    # --------------------------
+    # --------------------------------------------------------
     # NESSUN COMANDO
-    # --------------------------
+    # --------------------------------------------------------
 
     return None
 
 
-# ==============================
+# ============================================================
 # VOCE
-# ==============================
+# ============================================================
 
 def parla(testo):
 
@@ -532,9 +482,9 @@ def parla(testo):
         pass
 
 
-# ==============================
+# ============================================================
 # CERVELLO
-# ==============================
+# ============================================================
 
 def pensa(testo):
 
@@ -542,9 +492,9 @@ def pensa(testo):
 
     try:
 
-        # --------------------------
-        # CONTROLLO COMANDI PC
-        # --------------------------
+        # ----------------------------------------------------
+        # COMANDO COMPUTER
+        # ----------------------------------------------------
 
         comando_pc = esegui_comando_pc(
             testo
@@ -569,9 +519,9 @@ def pensa(testo):
 
             return comando_pc
 
-        # --------------------------
+        # ----------------------------------------------------
         # MEMORIA RECENTE
-        # --------------------------
+        # ----------------------------------------------------
 
         memoria_recente = memoria[-10:]
 
@@ -594,9 +544,9 @@ def pensa(testo):
                     + "\n\n"
                 )
 
-        # --------------------------
+        # ----------------------------------------------------
         # RICERCA WEB
-        # --------------------------
+        # ----------------------------------------------------
 
         if serve_ricerca(testo):
 
@@ -616,8 +566,7 @@ def pensa(testo):
                 + "\n\n"
                 + "Rispondi in italiano. "
                 + "Usa i risultati Web quando servono. "
-                + "Usa anche la memoria recente "
-                + "se è utile. "
+                + "Usa la memoria recente se è utile. "
                 + "Non inventare informazioni."
             )
 
@@ -631,17 +580,17 @@ def pensa(testo):
                 + testo
             )
 
-        # --------------------------
+        # ----------------------------------------------------
         # OLLAMA
-        # --------------------------
+        # ----------------------------------------------------
 
         risposta = parla_con_ollama(
             prompt
         )
 
-        # --------------------------
-        # SALVA CONVERSAZIONE
-        # --------------------------
+        # ----------------------------------------------------
+        # MEMORIA
+        # ----------------------------------------------------
 
         memoria.append(
             {
@@ -667,15 +616,12 @@ def pensa(testo):
             errore
         )
 
-        return (
-            "Ho avuto un problema "
-            "mentre pensavo."
-        )
+        return "Ho avuto un problema mentre pensavo."
 
 
-# ==============================
+# ============================================================
 # AVVIO
-# ==============================
+# ============================================================
 
 print()
 print("==============================")
@@ -697,9 +643,9 @@ parla(
 )
 
 
-# ==============================
+# ============================================================
 # CICLO PRINCIPALE
-# ==============================
+# ============================================================
 
 while True:
 
@@ -735,9 +681,9 @@ while True:
 
         comando = testo.lower().strip()
 
-        # --------------------------
+        # ----------------------------------------------------
         # USCITA
-        # --------------------------
+        # ----------------------------------------------------
 
         if comando in [
             "esci",
@@ -752,31 +698,28 @@ while True:
 
             break
 
-        # --------------------------
+        # ----------------------------------------------------
         # PENSA
-        # --------------------------
+        # ----------------------------------------------------
 
         risposta = pensa(
             testo
         )
 
-        # --------------------------
+        # ----------------------------------------------------
         # PARLA
-        # --------------------------
+        # ----------------------------------------------------
 
         parla(
             risposta
         )
 
-        time.sleep(
-            0.3
-        )
+        time.sleep(0.3)
 
     except sr.WaitTimeoutError:
 
         print(
-            "Non ho sentito nulla. "
-            "Riprovo..."
+            "Non ho sentito nulla. Riprovo..."
         )
 
     except sr.UnknownValueError:
@@ -786,8 +729,7 @@ while True:
         )
 
         parla(
-            "Non ho capito. "
-            "Puoi ripetere?"
+            "Non ho capito. Puoi ripetere?"
         )
 
     except sr.RequestError as errore:
@@ -798,16 +740,13 @@ while True:
         )
 
         parla(
-            "Ho un problema "
-            "con il riconoscimento vocale."
+            "Ho un problema con il riconoscimento vocale."
         )
 
     except KeyboardInterrupt:
 
         print()
-        print(
-            "🐉 Shifu chiuso."
-        )
+        print("🐉 Shifu chiuso.")
 
         break
 
