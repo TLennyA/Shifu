@@ -6,6 +6,7 @@ import edge_tts
 import pygame
 import os
 import time
+import json
 
 
 # ==============================
@@ -16,6 +17,7 @@ import time
 MODELLO = "llama3.2:3b"
 VOCE = "it-IT-ElsaNeural"
 FILE_AUDIO = "shifu_voice.mp3"
+FILE_MEMORIA = "memoria.json"
 
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
@@ -27,27 +29,103 @@ recognizer = sr.Recognizer()
 
 
 # ==============================
+# MEMORIA
+# ==============================
+
+
+def carica_memoria():
+
+
+    if not os.path.exists(FILE_MEMORIA):
+        return []
+
+
+    try:
+        with open(
+            FILE_MEMORIA,
+            "r",
+            encoding="utf-8"
+        ) as file:
+
+
+            return json.load(file)
+
+
+    except Exception as errore:
+
+
+        print("ERRORE MEMORIA:", errore)
+
+
+        return []
+
+
+
+
+def salva_memoria(memoria):
+
+
+    try:
+
+
+        with open(
+            FILE_MEMORIA,
+            "w",
+            encoding="utf-8"
+        ) as file:
+
+
+            json.dump(
+                memoria,
+                file,
+                ensure_ascii=False,
+                indent=2
+            )
+
+
+    except Exception as errore:
+
+
+        print("ERRORE SALVATAGGIO MEMORIA:", errore)
+
+
+
+
+memoria = carica_memoria()
+
+
+
+
+# ==============================
 # OLLAMA
 # ==============================
 
 
 def parla_con_ollama(prompt):
+
+
     try:
+
+
         risposta = requests.post(
             OLLAMA_URL,
             json={
                 "model": MODELLO,
+
+
                 "messages": [
                     {
                         "role": "system",
                         "content": (
                             "Ti chiami Shifu. "
                             "Sei un assistente personale intelligente, "
-                            "amichevole e naturale. "
+                            "amichevole, naturale e curioso. "
                             "Parli sempre in italiano. "
-                            "Rispondi in modo chiaro e abbastanza breve "
-                            "perché le risposte vengono lette a voce. "
-                            "Non inventare informazioni."
+                            "Ricordi il contesto della conversazione "
+                            "quando ti viene fornito. "
+                            "Non inventare informazioni. "
+                            "Le tue risposte vengono lette a voce, "
+                            "quindi devono essere naturali e abbastanza brevi."
                         )
                     },
                     {
@@ -55,8 +133,12 @@ def parla_con_ollama(prompt):
                         "content": prompt
                     }
                 ],
+
+
                 "stream": False
             },
+
+
             timeout=120
         )
 
@@ -71,13 +153,27 @@ def parla_con_ollama(prompt):
 
 
     except requests.exceptions.ConnectionError:
+
+
         print("ERRORE: Ollama non è raggiungibile.")
-        return "Non riesco a collegarmi al mio cervello."
+
+
+        return (
+            "Non riesco a collegarmi "
+            "al mio cervello."
+        )
 
 
     except Exception as errore:
+
+
         print("ERRORE OLLAMA:", errore)
-        return "Ho avuto un problema mentre elaboravo la richiesta."
+
+
+        return (
+            "Ho avuto un problema "
+            "mentre elaboravo la richiesta."
+        )
 
 
 
@@ -88,15 +184,21 @@ def parla_con_ollama(prompt):
 
 
 def cerca_web(query):
+
+
     print()
     print("🔎 Shifu sta cercando sul Web...")
 
 
     try:
+
+
         risultati = []
 
 
         with DDGS() as ddgs:
+
+
             elementi = ddgs.text(
                 query,
                 max_results=5
@@ -104,31 +206,65 @@ def cerca_web(query):
 
 
             for elemento in elementi:
-                titolo = elemento.get("title", "")
-                descrizione = elemento.get("body", "")
-                link = elemento.get("href", "")
+
+
+                titolo = elemento.get(
+                    "title",
+                    ""
+                )
+
+
+                descrizione = elemento.get(
+                    "body",
+                    ""
+                )
+
+
+                link = elemento.get(
+                    "href",
+                    ""
+                )
 
 
                 risultati.append(
                     "Titolo: "
                     + titolo
-                    + "\nInformazioni: "
+                    + "
+Informazioni: "
                     + descrizione
-                    + "\nLink: "
+                    + "
+Link: "
                     + link
                 )
 
 
         if not risultati:
-            return "Non ho trovato risultati sul Web."
 
 
-        return "\n\n".join(risultati)
+            return (
+                "Non ho trovato "
+                "risultati sul Web."
+            )
+
+
+        return "\n\n".join(
+            risultati
+        )
 
 
     except Exception as errore:
-        print("ERRORE RICERCA WEB:", errore)
-        return "La ricerca Web non è disponibile in questo momento."
+
+
+        print(
+            "ERRORE RICERCA WEB:",
+            errore
+        )
+
+
+        return (
+            "La ricerca Web "
+            "non è disponibile."
+        )
 
 
 
@@ -142,6 +278,8 @@ def serve_ricerca(testo):
 
 
     parole = [
+
+
         "meteo",
         "tempo",
         "gradi",
@@ -162,6 +300,8 @@ def serve_ricerca(testo):
         "chi è",
         "cosa è",
         "quando"
+
+
     ]
 
 
@@ -222,6 +362,8 @@ def parla(testo):
 
 
         while pygame.mixer.music.get_busy():
+
+
             pygame.time.Clock().tick(10)
 
 
@@ -242,7 +384,11 @@ def parla(testo):
 
 
         if os.path.exists(FILE_AUDIO):
-            os.remove(FILE_AUDIO)
+
+
+            os.remove(
+                FILE_AUDIO
+            )
 
 
     except Exception:
@@ -252,50 +398,130 @@ def parla(testo):
 
 
 # ==============================
-# CERVELLO DI SHIFU
+# CERVELLO
 # ==============================
 
 
 def pensa(testo):
 
 
+    global memoria
+
+
     try:
+
+
+        # --------------------------
+        # MEMORIA RECENTE
+        # --------------------------
+
+
+        memoria_recente = memoria[-10:]
+
+
+        contesto_memoria = ""
+
+
+        if memoria_recente:
+
+
+            contesto_memoria = (
+                "\n\nCONVERSAZIONI RECENTI:\n"
+            )
+
+
+            for elemento in memoria_recente:
+
+
+                contesto_memoria += (
+                    "Utente: "
+                    + elemento["utente"]
+                    + "\n"
+                    + "Shifu: "
+                    + elemento["shifu"]
+                    + "\n\n"
+                )
+
+
+        # --------------------------
+        # RICERCA WEB
+        # --------------------------
 
 
         if serve_ricerca(testo):
 
 
-            risultati = cerca_web(testo)
-
-
-            prompt = (
-                "L'utente ti ha fatto questa domanda:\n\n"
-                + testo
-                + "\n\n"
-                + "Hai effettuato una ricerca sul Web.\n\n"
-                + "RISULTATI TROVATI:\n"
-                + risultati
-                + "\n\n"
-                + "Rispondi alla domanda usando "
-                + "le informazioni trovate. "
-                + "Se i risultati non contengono "
-                + "la risposta, dillo chiaramente. "
-                + "Non inventare dati. "
-                + "Rispondi in italiano e in modo naturale."
+            risultati = cerca_web(
+                testo
             )
 
 
-            return parla_con_ollama(
-                prompt
+            prompt = (
+                "DOMANDA DELL'UTENTE:\n"
+                + testo
+                + "\n\n"
+                + "MEMORIA:\n"
+                + contesto_memoria
+                + "\n"
+                + "RISULTATI WEB:\n"
+                + risultati
+                + "\n\n"
+                + "Rispondi in italiano. "
+                + "Usa i risultati Web quando servono. "
+                + "Usa anche la memoria recente "
+                + "se è utile. "
+                + "Non inventare informazioni."
             )
 
 
         else:
 
 
-            return parla_con_ollama(
-                testo
+            prompt = (
+                "MEMORIA:\n"
+                + contesto_memoria
+                + "\n"
+                + "NUOVA DOMANDA:\n"
+                + testo
             )
+
+
+        # --------------------------
+        # OLLAMA
+        # --------------------------
+
+
+        risposta = parla_con_ollama(
+            prompt
+        )
+
+
+        # --------------------------
+        # SALVA CONVERSAZIONE
+        # --------------------------
+
+
+        memoria.append(
+            {
+                "utente": testo,
+                "shifu": risposta
+            }
+        )
+
+
+        # Manteniamo massimo 100 conversazioni
+        if len(memoria) > 100:
+
+
+            memoria = memoria[-100:]
+
+
+        salva_memoria(
+            memoria
+        )
+
+
+        return risposta
 
 
     except Exception as errore:
@@ -322,11 +548,12 @@ def pensa(testo):
 
 print()
 print("==============================")
-print("🐉 SHIFU V0.7")
+print("🐉 SHIFU V0.8")
 print("==============================")
 print("🧠 Modello:", MODELLO)
 print("🔊 Voce:", VOCE)
 print("🌐 Ricerca: DuckDuckGo")
+print("💾 Memoria: locale")
 print("🔗 Ollama: HTTP locale")
 print("==============================")
 print()
@@ -334,7 +561,7 @@ print()
 
 parla(
     "Ciao! Sono Shifu. "
-    "Sono pronta ad aiutarti."
+    "La mia memoria locale è pronta."
 )
 
 
@@ -371,7 +598,9 @@ while True:
             )
 
 
-        print("🧠 Sto elaborando...")
+        print(
+            "🧠 Sto elaborando..."
+        )
 
 
         testo = recognizer.recognize_google(
@@ -385,6 +614,11 @@ while True:
 
 
         comando = testo.lower().strip()
+
+
+        # --------------------------
+        # USCITA
+        # --------------------------
 
 
         if comando in [
@@ -403,9 +637,19 @@ while True:
             break
 
 
+        # --------------------------
+        # PENSA
+        # --------------------------
+
+
         risposta = pensa(
             testo
         )
+
+
+        # --------------------------
+        # PARLA
+        # --------------------------
 
 
         parla(
@@ -451,8 +695,8 @@ while True:
 
 
         parla(
-            "Ho un problema con "
-            "il riconoscimento vocale."
+            "Ho un problema "
+            "con il riconoscimento vocale."
         )
 
 
@@ -460,7 +704,11 @@ while True:
 
 
         print()
-        print("🐉 Shifu chiuso.")
+        print(
+            "🐉 Shifu chiuso."
+        )
+
+
         break
 
 
