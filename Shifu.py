@@ -15,7 +15,7 @@ import webbrowser
 # CONFIGURAZIONE SHIFU
 # ============================================================
 
-VERSIONE = "0.9"
+VERSIONE = "0.9.1"
 
 MODELLO = "llama3.2:3b"
 VOCE = "it-IT-ElsaNeural"
@@ -45,11 +45,17 @@ def carica_memoria():
             encoding="utf-8"
         ) as file:
 
-            return json.load(file)
+            dati = json.load(file)
+
+            if isinstance(dati, list):
+                return dati
+
+            return []
 
     except Exception as errore:
 
         print("ERRORE MEMORIA:", errore)
+
         return []
 
 
@@ -87,14 +93,18 @@ def parla_con_ollama(prompt):
     try:
 
         risposta = requests.post(
+
             OLLAMA_URL,
 
             json={
+
                 "model": MODELLO,
 
                 "messages": [
+
                     {
                         "role": "system",
+
                         "content": (
                             "Ti chiami Shifu. "
                             "Sei un assistente personale intelligente, "
@@ -109,8 +119,10 @@ def parla_con_ollama(prompt):
 
                     {
                         "role": "user",
+
                         "content": prompt
                     }
+
                 ],
 
                 "stream": False
@@ -127,15 +139,26 @@ def parla_con_ollama(prompt):
 
     except requests.exceptions.ConnectionError:
 
-        print("ERRORE: Ollama non è raggiungibile.")
+        print(
+            "ERRORE: Ollama non è raggiungibile."
+        )
 
-        return "Non riesco a collegarmi al mio cervello."
+        return (
+            "Non riesco a collegarmi "
+            "al mio cervello."
+        )
 
     except Exception as errore:
 
-        print("ERRORE OLLAMA:", errore)
+        print(
+            "ERRORE OLLAMA:",
+            errore
+        )
 
-        return "Ho avuto un problema mentre elaboravo la richiesta."
+        return (
+            "Ho avuto un problema "
+            "mentre elaboravo la richiesta."
+        )
 
 
 # ============================================================
@@ -146,6 +169,7 @@ def cerca_web(query):
 
     print()
     print("🔎 Shifu sta cercando sul Web...")
+    print("🔎 Query:", query)
 
     try:
 
@@ -183,15 +207,26 @@ def cerca_web(query):
 
         if not risultati:
 
-            return "Non ho trovato risultati sul Web."
+            return (
+                "Non ho trovato "
+                "risultati sul Web."
+            )
 
-        return "\n\n".join(risultati)
+        return "\n\n".join(
+            risultati
+        )
 
     except Exception as errore:
 
-        print("ERRORE RICERCA WEB:", errore)
+        print(
+            "ERRORE RICERCA WEB:",
+            errore
+        )
 
-        return "La ricerca Web non è disponibile."
+        return (
+            "La ricerca Web "
+            "non è disponibile."
+        )
 
 
 # ============================================================
@@ -201,6 +236,7 @@ def cerca_web(query):
 def serve_ricerca(testo):
 
     parole = [
+
         "meteo",
         "tempo",
         "gradi",
@@ -221,6 +257,7 @@ def serve_ricerca(testo):
         "chi è",
         "cosa è",
         "quando"
+
     ]
 
     testo = testo.lower()
@@ -232,6 +269,37 @@ def serve_ricerca(testo):
 
 
 # ============================================================
+# TROVA CHROME
+# ============================================================
+
+def trova_chrome():
+
+    percorsi = [
+
+        os.path.expandvars(
+            r"%ProgramFiles%\Google\Chrome\Application\chrome.exe"
+        ),
+
+        os.path.expandvars(
+            r"%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
+        ),
+
+        os.path.expandvars(
+            r"%LocalAppData%\Google\Chrome\Application\chrome.exe"
+        )
+
+    ]
+
+    for percorso in percorsi:
+
+        if os.path.exists(percorso):
+
+            return percorso
+
+    return None
+
+
+# ============================================================
 # CONTROLLO COMPUTER
 # ============================================================
 
@@ -239,32 +307,61 @@ def esegui_comando_pc(testo):
 
     comando = testo.lower().strip()
 
-    # --------------------------------------------------------
+    # ========================================================
     # CHROME
-    # --------------------------------------------------------
+    # ========================================================
 
     if (
         "apri chrome" in comando
         or "apri google chrome" in comando
     ):
 
+        print()
+        print("💻 Shifu sta aprendo Chrome...")
+
         try:
 
+            chrome = trova_chrome()
+
+            if chrome is None:
+
+                print(
+                    "❌ Chrome non trovato."
+                )
+
+                return (
+                    "Non riesco a trovare "
+                    "Google Chrome sul computer."
+                )
+
             subprocess.Popen(
-                "start chrome",
-                shell=True
+                [chrome]
             )
 
-            return "Apro Google Chrome."
+            print(
+                "✅ Chrome avviato:",
+                chrome
+            )
+
+            return (
+                "Chrome è stato avviato."
+            )
 
         except Exception as errore:
 
-            print("ERRORE CHROME:", errore)
-            return "Non riesco ad aprire Chrome."
+            print(
+                "❌ ERRORE CHROME:",
+                errore
+            )
 
-    # --------------------------------------------------------
+            return (
+                "Non sono riuscito "
+                "ad aprire Chrome."
+            )
+
+    # ========================================================
     # BLOCCO NOTE
-    # --------------------------------------------------------
+    # ========================================================
 
     if (
         "apri blocco note" in comando
@@ -272,64 +369,80 @@ def esegui_comando_pc(testo):
         or "apri notepad" in comando
     ):
 
+        print()
+        print(
+            "💻 Shifu sta aprendo il Blocco Note..."
+        )
+
         try:
 
             subprocess.Popen(
-                "notepad.exe"
+                ["notepad.exe"]
             )
 
-            return "Apro il blocco note."
+            print(
+                "✅ Blocco Note avviato."
+            )
+
+            return (
+                "Il blocco note è stato aperto."
+            )
 
         except Exception as errore:
 
-            print("ERRORE BLOCCO NOTE:", errore)
-            return "Non riesco ad aprire il blocco note."
+            print(
+                "❌ ERRORE BLOCCO NOTE:",
+                errore
+            )
 
-    # --------------------------------------------------------
+            return (
+                "Non sono riuscito "
+                "ad aprire il blocco note."
+            )
+
+    # ========================================================
     # CALCOLATRICE
-    # --------------------------------------------------------
+    # ========================================================
 
     if (
         "apri calcolatrice" in comando
         or "apri la calcolatrice" in comando
     ):
 
-        try:
-
-            subprocess.Popen(
-                "calc.exe"
-            )
-
-            return "Apro la calcolatrice."
-
-        except Exception as errore:
-
-            print("ERRORE CALCOLATRICE:", errore)
-            return "Non riesco ad aprire la calcolatrice."
-
-    # --------------------------------------------------------
-    # DISCORD
-    # --------------------------------------------------------
-
-    if "apri discord" in comando:
+        print()
+        print(
+            "💻 Shifu sta aprendo la Calcolatrice..."
+        )
 
         try:
 
             subprocess.Popen(
-                "start discord:",
-                shell=True
+                ["calc.exe"]
             )
 
-            return "Apro Discord."
+            print(
+                "✅ Calcolatrice avviata."
+            )
+
+            return (
+                "La calcolatrice è stata aperta."
+            )
 
         except Exception as errore:
 
-            print("ERRORE DISCORD:", errore)
-            return "Non riesco ad aprire Discord."
+            print(
+                "❌ ERRORE CALCOLATRICE:",
+                errore
+            )
 
-    # --------------------------------------------------------
+            return (
+                "Non sono riuscito "
+                "ad aprire la calcolatrice."
+            )
+
+    # ========================================================
     # ESPLORA FILE
-    # --------------------------------------------------------
+    # ========================================================
 
     if (
         "apri esplora file" in comando
@@ -337,47 +450,88 @@ def esegui_comando_pc(testo):
         or "apri esplora" in comando
     ):
 
+        print()
+        print(
+            "💻 Shifu sta aprendo Esplora File..."
+        )
+
         try:
 
             subprocess.Popen(
-                "explorer.exe"
+                ["explorer.exe"]
             )
 
-            return "Apro Esplora File."
+            print(
+                "✅ Esplora File avviato."
+            )
+
+            return (
+                "Esplora File è stato aperto."
+            )
 
         except Exception as errore:
 
-            print("ERRORE ESPLORA FILE:", errore)
-            return "Non riesco ad aprire Esplora File."
+            print(
+                "❌ ERRORE ESPLORA FILE:",
+                errore
+            )
 
-    # --------------------------------------------------------
+            return (
+                "Non sono riuscito "
+                "ad aprire Esplora File."
+            )
+
+    # ========================================================
     # IMPOSTAZIONI WINDOWS
-    # --------------------------------------------------------
+    # ========================================================
 
     if (
         "apri impostazioni" in comando
         or "apri le impostazioni" in comando
     ):
 
+        print()
+        print(
+            "💻 Shifu sta aprendo le Impostazioni..."
+        )
+
         try:
 
-            subprocess.Popen(
-                "start ms-settings:",
-                shell=True
+            os.startfile(
+                "ms-settings:"
             )
 
-            return "Apro le impostazioni di Windows."
+            print(
+                "✅ Impostazioni avviate."
+            )
+
+            return (
+                "Le impostazioni di Windows "
+                "sono state aperte."
+            )
 
         except Exception as errore:
 
-            print("ERRORE IMPOSTAZIONI:", errore)
-            return "Non riesco ad aprire le impostazioni."
+            print(
+                "❌ ERRORE IMPOSTAZIONI:",
+                errore
+            )
 
-    # --------------------------------------------------------
+            return (
+                "Non sono riuscito "
+                "ad aprire le impostazioni."
+            )
+
+    # ========================================================
     # YOUTUBE
-    # --------------------------------------------------------
+    # ========================================================
 
     if "apri youtube" in comando:
+
+        print()
+        print(
+            "🌐 Shifu sta aprendo YouTube..."
+        )
 
         try:
 
@@ -385,21 +539,35 @@ def esegui_comando_pc(testo):
                 "https://www.youtube.com"
             )
 
-            return "Apro YouTube."
+            return (
+                "YouTube è stato aperto."
+            )
 
         except Exception as errore:
 
-            print("ERRORE YOUTUBE:", errore)
-            return "Non riesco ad aprire YouTube."
+            print(
+                "❌ ERRORE YOUTUBE:",
+                errore
+            )
 
-    # --------------------------------------------------------
+            return (
+                "Non sono riuscito "
+                "ad aprire YouTube."
+            )
+
+    # ========================================================
     # GOOGLE
-    # --------------------------------------------------------
+    # ========================================================
 
     if (
         "apri google" in comando
         and "chrome" not in comando
     ):
+
+        print()
+        print(
+            "🌐 Shifu sta aprendo Google..."
+        )
 
         try:
 
@@ -407,16 +575,25 @@ def esegui_comando_pc(testo):
                 "https://www.google.com"
             )
 
-            return "Apro Google."
+            return (
+                "Google è stato aperto."
+            )
 
         except Exception as errore:
 
-            print("ERRORE GOOGLE:", errore)
-            return "Non riesco ad aprire Google."
+            print(
+                "❌ ERRORE GOOGLE:",
+                errore
+            )
 
-    # --------------------------------------------------------
+            return (
+                "Non sono riuscito "
+                "ad aprire Google."
+            )
+
+    # ========================================================
     # NESSUN COMANDO
-    # --------------------------------------------------------
+    # ========================================================
 
     return None
 
@@ -460,6 +637,7 @@ def parla(testo):
             pygame.time.Clock().tick(10)
 
         pygame.mixer.music.stop()
+
         pygame.mixer.quit()
 
     except Exception as errore:
@@ -483,17 +661,39 @@ def parla(testo):
 
 
 # ============================================================
+# SALVA NELLA MEMORIA
+# ============================================================
+
+def registra_memoria(utente, risposta):
+
+    global memoria
+
+    memoria.append(
+        {
+            "utente": utente,
+            "shifu": risposta
+        }
+    )
+
+    if len(memoria) > 100:
+
+        memoria = memoria[-100:]
+
+    salva_memoria(
+        memoria
+    )
+
+
+# ============================================================
 # CERVELLO
 # ============================================================
 
 def pensa(testo):
 
-    global memoria
-
     try:
 
         # ----------------------------------------------------
-        # COMANDO COMPUTER
+        # PRIMA CONTROLLIAMO I COMANDI DEL PC
         # ----------------------------------------------------
 
         comando_pc = esegui_comando_pc(
@@ -502,19 +702,9 @@ def pensa(testo):
 
         if comando_pc is not None:
 
-            memoria.append(
-                {
-                    "utente": testo,
-                    "shifu": comando_pc
-                }
-            )
-
-            if len(memoria) > 100:
-
-                memoria = memoria[-100:]
-
-            salva_memoria(
-                memoria
+            registra_memoria(
+                testo,
+                comando_pc
             )
 
             return comando_pc
@@ -535,12 +725,22 @@ def pensa(testo):
 
             for elemento in memoria_recente:
 
+                utente_memoria = elemento.get(
+                    "utente",
+                    ""
+                )
+
+                shifu_memoria = elemento.get(
+                    "shifu",
+                    ""
+                )
+
                 contesto_memoria += (
                     "Utente: "
-                    + elemento["utente"]
+                    + utente_memoria
                     + "\n"
                     + "Shifu: "
-                    + elemento["shifu"]
+                    + shifu_memoria
                     + "\n\n"
                 )
 
@@ -555,28 +755,45 @@ def pensa(testo):
             )
 
             prompt = (
+
                 "DOMANDA DELL'UTENTE:\n"
+
                 + testo
+
                 + "\n\n"
-                + "MEMORIA:\n"
+
+                + "MEMORIA RECENTE:\n"
+
                 + contesto_memoria
+
                 + "\n"
+
                 + "RISULTATI WEB:\n"
+
                 + risultati
+
                 + "\n\n"
+
                 + "Rispondi in italiano. "
-                + "Usa i risultati Web quando servono. "
-                + "Usa la memoria recente se è utile. "
-                + "Non inventare informazioni."
+                "Usa i risultati Web quando sono utili. "
+                "Usa la memoria recente quando è pertinente. "
+                "Non inventare informazioni. "
+                "Se i risultati Web non sono sufficienti, "
+                "dillo chiaramente."
             )
 
         else:
 
             prompt = (
-                "MEMORIA:\n"
+
+                "MEMORIA RECENTE:\n"
+
                 + contesto_memoria
+
                 + "\n"
-                + "NUOVA DOMANDA:\n"
+
+                + "NUOVA DOMANDA DELL'UTENTE:\n"
+
                 + testo
             )
 
@@ -592,31 +809,25 @@ def pensa(testo):
         # MEMORIA
         # ----------------------------------------------------
 
-        memoria.append(
-            {
-                "utente": testo,
-                "shifu": risposta
-            }
-        )
-
-        if len(memoria) > 100:
-
-            memoria = memoria[-100:]
-
-        salva_memoria(
-            memoria
+        registra_memoria(
+            testo,
+            risposta
         )
 
         return risposta
 
     except Exception as errore:
 
+        print()
         print(
-            "ERRORE CERVELLO:",
+            "❌ ERRORE CERVELLO:",
             errore
         )
 
-        return "Ho avuto un problema mentre pensavo."
+        return (
+            "Ho avuto un problema "
+            "mentre pensavo."
+        )
 
 
 # ============================================================
@@ -624,16 +835,17 @@ def pensa(testo):
 # ============================================================
 
 print()
-print("==============================")
+print("==========================================")
 print("🐉 SHIFU V" + VERSIONE)
-print("==============================")
+print("==========================================")
 print("🧠 Modello:", MODELLO)
 print("🔊 Voce:", VOCE)
 print("🌐 Ricerca: DuckDuckGo")
 print("💾 Memoria: locale")
 print("🔗 Ollama: HTTP locale")
 print("💻 Controllo PC: ATTIVO")
-print("==============================")
+print("🔐 Sicurezza: COMANDI LIMITATI")
+print("==========================================")
 print()
 
 parla(
@@ -686,10 +898,12 @@ while True:
         # ----------------------------------------------------
 
         if comando in [
+
             "esci",
             "stop",
             "chiudi shifu",
             "spegni shifu"
+
         ]:
 
             parla(
@@ -714,12 +928,15 @@ while True:
             risposta
         )
 
-        time.sleep(0.3)
+        time.sleep(
+            0.3
+        )
 
     except sr.WaitTimeoutError:
 
         print(
-            "Non ho sentito nulla. Riprovo..."
+            "Non ho sentito nulla. "
+            "Riprovo..."
         )
 
     except sr.UnknownValueError:
@@ -729,7 +946,8 @@ while True:
         )
 
         parla(
-            "Non ho capito. Puoi ripetere?"
+            "Non ho capito. "
+            "Puoi ripetere?"
         )
 
     except sr.RequestError as errore:
@@ -740,13 +958,16 @@ while True:
         )
 
         parla(
-            "Ho un problema con il riconoscimento vocale."
+            "Ho un problema "
+            "con il riconoscimento vocale."
         )
 
     except KeyboardInterrupt:
 
         print()
-        print("🐉 Shifu chiuso.")
+        print(
+            "🐉 Shifu chiuso."
+        )
 
         break
 
